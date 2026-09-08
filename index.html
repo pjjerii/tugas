@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Buku tamu dan pesan pengunjung">
+    <title>Buku Tamu</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: 'Poppins', sans-serif;
+            background:
+                radial-gradient(circle at 15% 20%, rgba(75,160,255,.25), transparent 30%),
+                radial-gradient(circle at 85% 80%, rgba(0,180,255,.22), transparent 30%),
+                linear-gradient(135deg, #061a3a, #0b3d78 50%, #36a9e1);
+            color: #fff;
+            padding: 45px 18px;
+        }
+
+        .guest-page {
+            width: min(100%, 760px);
+            margin: auto;
+        }
+
+        /* =========================
+           FORM KIRIM PESAN
+        ========================== */
+
+        .guest-card {
+            width: 100%;
+            padding: 38px 30px;
+            border-radius: 30px;
+            background: rgba(255,255,255,.12);
+            border: 1px solid rgba(255,255,255,.25);
+            box-shadow:
+                0 25px 70px rgba(0,0,0,.28),
+                inset 0 1px 0 rgba(255,255,255,.2);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            transform: translateY(0);
+            transition: .3s ease;
+        }
+
+        .guest-card:hover {
+            transform: translateY(-4px);
+            box-shadow:
+                0 30px 80px rgba(0,0,0,.34),
+                inset 0 1px 0 rgba(255,255,255,.2);
+        }
+
+        .guest-head {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+
+        .guest-head .welcome {
+            display: inline-block;
+            padding: 7px 15px;
+            margin-bottom: 12px;
+            border-radius: 50px;
+            background: rgba(255,255,255,.14);
+            border: 1px solid rgba(255,255,255,.2);
+            color: #bfeaff;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 2px;
+        }
+
+        .guest-head h1 {
+            margin: 0;
+            color: #fff;
+            font-size: clamp(28px, 7vw, 40px);
+            font-weight: 800;
+        }
+
+        .guest-head p {
+            margin: 10px auto 0;
+            max-width: 500px;
+            color: rgba(255,255,255,.72);
+            font-size: 13px;
+            line-height: 1.7;
+        }
+
+        .guest-form {
+            display: grid;
+            gap: 16px;
+        }
+
+        .guest-field label {
+            display: block;
+            margin: 0 0 7px 3px;
+            color: rgba(255,255,255,.88);
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .guest-field input,
+        .guest-field textarea {
+            width: 100%;
+            border: 1px solid rgba(255,255,255,.2);
+            border-radius: 16px;
+            outline: none;
+            padding: 14px 16px;
+            background: rgba(255,255,255,.1);
+            color: #fff;
+            font-family: inherit;
+            font-size: 13px;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+            transition: .25s ease;
+        }
+
+        .guest-field textarea {
+            min-height: 125px;
+            resize: vertical;
+        }
+
+        .guest-field input::placeholder,
+        .guest-field textarea::placeholder {
+            color: rgba(255,255,255,.48);
+        }
+
+        .guest-field input:focus,
+        .guest-field textarea:focus {
+            border-color: rgba(120,210,255,.8);
+            background: rgba(255,255,255,.16);
+            box-shadow:
+                0 0 0 3px rgba(80,190,255,.12),
+                0 10px 25px rgba(0,0,0,.08);
+        }
+
+        .guest-submit {
+            width: 100%;
+            min-height: 56px;
+            margin-top: 4px;
+            border: 1px solid rgba(255,255,255,.35);
+            border-radius: 17px;
+            background: linear-gradient(
+                135deg,
+                rgba(255,255,255,.22),
+                rgba(255,255,255,.10)
+            );
+            color: #fff;
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 12px 30px rgba(0,0,0,.18);
+            transition: .25s ease;
+        }
+
+        .guest-submit:hover {
+            transform: translateY(-3px);
+            background: rgba(255,255,255,.22);
+            box-shadow: 0 17px 35px rgba(0,0,0,.25);
+        }
+
+        .guest-submit:active {
+            transform: translateY(0);
+        }
+
+        .guest-submit:disabled {
+            opacity: .6;
+            cursor: wait;
+            transform: none;
+        }
+
+        .guest-status {
+            min-height: 20px;
+            margin-top: -2px;
+            text-align: center;
+            color: rgba(255,255,255,.65);
+            font-size: 12px;
+        }
+
+        .guest-status.success {
+            color: #a7f3d0;
+        }
+
+        .guest-status.error {
+            color: #fecaca;
+        }
+
+        /* =========================
+           BAGIAN PESAN TAMU
+        ========================== */
+
+        .guest-messages-section {
+            margin-top: 28px;
+            padding: 30px;
+            border-radius: 30px;
+            background: rgba(255,255,255,.10);
+            border: 1px solid rgba(255,255,255,.22);
+            box-shadow:
+                0 25px 65px rgba(0,0,0,.22),
+                inset 0 1px 0 rgba(255,255,255,.15);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+        }
+
+        .guest-messages-title {
+            margin: 0 0 22px;
+            text-align: center;
+            color: #fff;
+            font-size: clamp(23px, 6vw, 32px);
+            font-weight: 800;
+        }
+
+        .guest-messages-title span {
+            display: block;
+            margin-top: 5px;
+            color: rgba(255,255,255,.55);
+            font-size: 11px;
+            font-weight: 400;
+        }
+
+        .guest-messages {
+            display: grid;
+            gap: 13px;
+        }
+
+        .guest-message {
+            padding: 17px 18px;
+            border: 1px solid rgba(255,255,255,.2);
+            border-radius: 19px;
+            background: rgba(255,255,255,.09);
+            box-shadow: 0 10px 25px rgba(0,0,0,.12);
+            transition: .25s ease;
+        }
+
+        .guest-message:hover {
+            transform: translateY(-3px);
+            background: rgba(255,255,255,.13);
+            box-shadow: 0 15px 30px rgba(0,0,0,.18);
+        }
+
+        .guest-message-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .guest-message-name {
+            color: #aee6ff;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .guest-message-time {
+            color: rgba(255,255,255,.48);
+            font-size: 10px;
+            text-align: right;
+            white-space: nowrap;
+        }
+
+        .guest-message-contact {
+            margin-top: 4px;
+            color: rgba(255,255,255,.5);
+            font-size: 10px;
+        }
+
+        .guest-message-text {
+            margin-top: 11px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255,255,255,.1);
+            color: rgba(255,255,255,.82);
+            font-size: 13px;
+            line-height: 1.75;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+        }
+
+        .guest-empty,
+        .guest-loading {
+            padding: 20px;
+            border: 1px solid rgba(255,255,255,.18);
+            border-radius: 17px;
+            background: rgba(255,255,255,.07);
+            color: rgba(255,255,255,.55);
+            text-align: center;
+            font-size: 12px;
+        }
+
+        /* =========================
+           MOBILE
+        ========================== */
+
+        @media (max-width: 520px) {
+            body {
+                padding: 25px 12px;
+            }
+
+            .guest-card {
+                padding: 30px 18px;
+                border-radius: 25px;
+            }
+
+            .guest-messages-section {
+                padding: 25px 18px;
+                border-radius: 25px;
+            }
+
+            .guest-message-top {
+                align-items: flex-start;
+                flex-direction: column;
+                gap: 4px;
+            }
+
+            .guest-message-time {
+                text-align: left;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <main class="guest-page">
+
+        <!-- =========================
+             FORM KIRIM PESAN
+        ========================== -->
+
+        <section class="guest-card">
+
+            <div class="guest-head">
+                <div class="welcome">BUKU TAMU</div>
+
+                <h1>Kirim Pesan</h1>
+
+                <p>
+                    Silakan isi form di bawah untuk meninggalkan
+                    pesan.
+                </p>
+            </div>
+
+            <form class="guest-form" id="guestForm">
+
+                <div class="guest-field">
+                    <label for="nama">Nama</label>
+
+                    <input
+                        type="text"
+                        id="nama"
+                        name="nama"
+                        placeholder="Masukkan nama kamu"
+                        autocomplete="name"
+                        required
+                    >
+                </div>
+
+                <div class="guest-field">
+                    <label for="email">Email</label>
+
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        placeholder="Masukkan email"
+                        autocomplete="email"
+                        required
+                    >
+                </div>
+
+                <div class="guest-field">
+                    <label for="telepon">No. Telepon</label>
+
+                    <input
+                        type="tel"
+                        id="telepon"
+                        name="telepon"
+                        placeholder="Masukkan nomor telepon"
+                        autocomplete="tel"
+                        required
+                    >
+                </div>
+
+                <div class="guest-field">
+                    <label for="pesan">Pesan</label>
+
+                    <textarea
+                        id="pesan"
+                        name="pesan"
+                        placeholder="Tulis pesan kamu di sini..."
+                        required
+                    ></textarea>
+                </div>
+
+                <button
+                    class="guest-submit"
+                    id="sendButton"
+                    type="submit"
+                >
+                    Kirim Pesan
+                </button>
+
+                <div
+                    class="guest-status"
+                    id="status"
+                    aria-live="polite"
+                ></div>
+
+            </form>
+
+        </section>
+
+
+        <!-- =========================
+             PESAN YANG SUDAH TERKIRIM
+        ========================== -->
+
+        <section class="guest-messages-section">
+
+            <h2 class="guest-messages-title">
+                Pesan Tamu
+                <span>Pesan yang telah dikirim</span>
+            </h2>
+
+            <div
+                class="guest-messages"
+                id="messages"
+            >
+                <div class="guest-loading">
+                    Memuat pesan...
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <script>
+
+        /* =================================
+           MASUKKAN URL GOOGLE APPS SCRIPT
+        ================================== */
+
+        const SCRIPT_URL =
+            "MASUKKAN_URL_WEB_APP_DI_SINI";
+
+
+        const form =
+            document.getElementById("guestForm");
+
+        const sendButton =
+            document.getElementById("sendButton");
+
+        const statusBox =
+            document.getElementById("status");
+
+        const messagesBox =
+            document.getElementById("messages");
+
+
+        /* =================================
+           CEK KONEKSI
+        ================================== */
+
+        function isConnected() {
+
+            return SCRIPT_URL &&
+                !SCRIPT_URL.includes(
+                    "MASUKKAN_URL_WEB_APP"
+                );
+
+        }
+
+
+        /* =================================
+           KEAMANAN HTML
+        ================================== */
+
+        function escapeHTML(value) {
+
+            return String(value ?? "")
+                .replace(/[&<>"']/g, function(char) {
+
+                    const entities = {
+                        "&": "&amp;",
+                        "<": "&lt;",
+                        ">": "&gt;",
+                        '"': "&quot;",
+                        "'": "&#039;"
+                    };
+
+                    return entities[char];
+
+                });
+
+        }
+
+
+        /* =================================
+           STATUS
+        ================================== */
+
+        function showStatus(
+            message,
+            type = ""
+        ) {
+
+            statusBox.textContent = message;
+
+            statusBox.className =
+                "guest-status " + type;
+
+        }
+
+
+        /* =================================
+           TAMPILKAN PESAN
+        ================================== */
+
+        function renderMessages(data) {
+
+            if (
+                !Array.isArray(data) ||
+                data.length === 0
+            ) {
+
+                messagesBox.innerHTML =
+                    '<div class="guest-empty">' +
+                    'Belum ada pesan dari tamu.' +
+                    '</div>';
+
+                return;
+
+            }
+
+
+            messagesBox.innerHTML =
+                data.map(function(item) {
+
+                    return `
+                        <article class="guest-message">
+
+                            <div class="guest-message-top">
+
+                                <div class="guest-message-name">
+                                    ${escapeHTML(item.nama)}
+                                </div>
+
+                                <div class="guest-message-time">
+                                    ${escapeHTML(item.waktu)}
+                                </div>
+
+                            </div>
+
+                            <div class="guest-message-contact">
+                                ${escapeHTML(item.email)}
+                                &nbsp;•&nbsp;
+                                ${escapeHTML(item.telepon)}
+                            </div>
+
+                            <div class="guest-message-text">
+                                ${escapeHTML(item.pesan)}
+                            </div>
+
+                        </article>
+                    `;
+
+                }).join("");
+
+        }
+
+
+        /* =================================
+           AMBIL PESAN DARI GOOGLE SHEETS
+        ================================== */
+
+        function loadMessages() {
+
+            if (!isConnected()) {
+
+                messagesBox.innerHTML =
+                    '<div class="guest-empty">' +
+                    'URL Google Apps Script belum dipasang.' +
+                    '</div>';
+
+                return;
+
+            }
+
+
+            const callbackName =
+                "guestCallback_" +
+                Date.now() +
+                "_" +
+                Math.floor(
+                    Math.random() * 1000
+                );
+
+
+            const script =
+                document.createElement("script");
+
+
+            window[callbackName] =
+                function(data) {
+
+                    renderMessages(data);
+
+                    delete window[callbackName];
+
+                    script.remove();
+
+                };
+
+
+            script.onerror =
+                function() {
+
+                    messagesBox.innerHTML =
+                        '<div class="guest-empty">' +
+                        'Pesan tidak dapat dimuat. ' +
+                        'Periksa URL Apps Script.' +
+                        '</div>';
+
+                    delete window[callbackName];
+
+                    script.remove();
+
+                };
+
+
+            script.src =
+                SCRIPT_URL +
+                "?action=list&callback=" +
+                encodeURIComponent(
+                    callbackName
+                );
+
+
+            document.body.appendChild(script);
+
+        }
+
+
+        /* =================================
+           KIRIM PESAN
+        ================================== */
+
+        form.addEventListener(
+            "submit",
+            async function(event) {
+
+                event.preventDefault();
+
+
+                if (!isConnected()) {
+
+                    showStatus(
+                        "URL Google Apps Script belum dipasang.",
+                        "error"
+                    );
+
+                    return;
+
+                }
+
+
+                const nama =
+                    document
+                        .getElementById("nama")
+                        .value
+                        .trim();
+
+
+                const email =
+                    document
+                        .getElementById("email")
+                        .value
+                        .trim();
+
+
+                const telepon =
+                    document
+                        .getElementById("telepon")
+                        .value
+                        .trim();
+
+
+                const pesan =
+                    document
+                        .getElementById("pesan")
+                        .value
+                        .trim();
+
+
+                if (
+                    !nama ||
+                    !email ||
+                    !telepon ||
+                    !pesan
+                ) {
+
+                    showStatus(
+                        "Semua kolom wajib diisi.",
+                        "error"
+                    );
+
+                    return;
+
+                }
+
+
+                sendButton.disabled = true;
+
+                sendButton.textContent =
+                    "Mengirim...";
+
+
+                showStatus(
+                    "Pesan sedang dikirim..."
+                );
+
+
+                const params =
+                    new URLSearchParams({
+
+                        action: "send",
+
+                        nama: nama,
+
+                        email: email,
+
+                        telepon: telepon,
+
+                        pesan: pesan
+
+                    });
+
+
+                try {
+
+                    await fetch(
+
+                        SCRIPT_URL +
+                        "?" +
+                        params.toString(),
+
+                        {
+                            method: "GET",
+                            mode: "no-cors"
+                        }
+
+                    );
+
+
+                    form.reset();
+
+
+                    showStatus(
+                        "Pesan berhasil dikirim ✓",
+                        "success"
+                    );
+
+
+                    setTimeout(
+                        loadMessages,
+                        1000
+                    );
+
+
+                } catch (error) {
+
+                    console.error(error);
+
+                    showStatus(
+                        "Gagal mengirim pesan. Coba lagi.",
+                        "error"
+                    );
+
+                } finally {
+
+                    setTimeout(
+                        function() {
+
+                            sendButton.disabled =
+                                false;
+
+                            sendButton.textContent =
+                                "Kirim Pesan";
+
+                        },
+                        1800
+                    );
+
+      
