@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buku Tamu - Muh. Alif Fadilah</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📃</text></svg>">
+    <link rel="stylesheet" href="fj.css">
+</head>
+<body>
+
+    <div class="card wide">
+
+        <div class="dash-header">
+            <h1>📃 Buku Tamu</h1>
+        </div>
+
+        <section class="dash-section">
+            <h3>Tinggalkan Pesan</h3>
+
+            <form id="guestForm" class="guest-form">
+                <div class="form-group">
+                    <label for="nama">Nama</label>
+                    <input type="text" id="nama" name="nama" placeholder="Nama kamu" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" placeholder="email@contoh.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="komentar">Komentar</label>
+                    <textarea id="komentar" name="komentar" rows="4" placeholder="Tulis komentar atau pesan kamu di sini..." required></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-kirim">Kirim Pesan</button>
+                <p id="formMsg" class="form-msg"></p>
+            </form>
+        </section>
+
+        <section class="dash-section">
+            <h3>Pesan Pengunjung</h3>
+            <ul id="guestList" class="guest-list">
+                <li class="guest-empty" id="guestEmpty">Belum ada pesan. Jadilah yang pertama menulis! 👋</li>
+            </ul>
+        </section>
+
+        <div class="dash-footer">
+            <a href="index.html" class="btn btn-keluar">⬅ Keluar</a>
+        </div>
+
+    </div>
+
+    <script>
+  // GANTI URL DI BAWAH INI dengan URL Web App Apps Script milikmu
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzu35jJ1Sv6fe-KyRG0Z_Zcyi5iAmy9H3RAaGhXfE6_vpDZt0TFKkOQciNGi1JMrgLWCQ/exec";
+
+  const form = document.getElementById("guestForm");
+  const list = document.getElementById("guestList");
+  const emptyMsg = document.getElementById("guestEmpty");
+  const formMsg = document.getElementById("formMsg");
+
+  // Mencegah serangan XSS saat menampilkan input pengguna
+  function escapeHTML(str) {
+      if (!str) return "";
+      const div = document.createElement("div");
+      div.textContent = str;
+      return div.innerHTML;
+  }
+
+  function renderList(data) {
+      list.innerHTML = "";
+
+      if (!data || data.length === 0) {
+          if (emptyMsg) list.appendChild(emptyMsg);
+          else list.innerHTML = '<li class="guest-empty">Belum ada pesan.</li>';
+          return;
+      }
+
+      // Menampilkan dari pesan yang paling terbaru (reverse)
+      data.slice().reverse().forEach((entry) => {
+          const li = document.createElement("li");
+          li.className = "guest-item";
+          li.innerHTML = `
+              <div class="guest-item-header">
+                  <span class="guest-name">${escapeHTML(entry.nama)}</span>
+                  <span class="guest-date">${escapeHTML(entry.tanggal)}</span>
+              </div>
+              <p class="guest-comment">${escapeHTML(entry.komentar)}</p>
+          `;
+          list.appendChild(li);
+      });
+  }
+
+  function muatData() {
+      list.innerHTML = '<li class="guest-empty">Memuat pesan...</li>';
+      fetch(SCRIPT_URL)
+          .then((res) => {
+              if (!res.ok) throw new Error("Gagal memuat");
+              return res.json();
+          })
+          .then((data) => renderList(data))
+          .catch((err) => {
+              console.error(err);
+              list.innerHTML = '<li class="guest-empty">Gagal memuat pesan. Coba muat ulang halaman.</li>';
+          });
+  }
+
+  form.addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      const nama = document.getElementById("nama").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const komentar = document.getElementById("komentar").value.trim();
+
+      if (!nama || !email || !komentar) return;
+
+      formMsg.textContent = "Mengirim...";
+
+      // Mengirim data menggunakan POST
+      fetch(SCRIPT_URL, {
+          method: "POST",
+          // 'text/plain' digunakan untuk menghindari CORS Preflight issue pada Apps Script
+          headers: {
+              "Content-Type": "text/plain;charset=utf-8"
+          },
+          body: JSON.stringify({ nama, email, komentar })
+      })
+          .then((res) => res.json())
+          .then((resData) => {
+              if (resData.status === "error") {
+                  throw new Error(resData.message);
+              }
+              form.reset();
+              formMsg.textContent = "Terima kasih, pesan kamu sudah tersimpan! ✅";
+              setTimeout(() => (formMsg.textContent = ""), 3000);
+              muatData(); // Muat ulang daftar setelah berhasil kirim
+          })
+          .catch((err) => {
+              console.error(err);
+              formMsg.textContent = "Gagal mengirim. Coba lagi ya.";
+          });
+  });
+
+  // Memuat data saat halaman pertama kali dibuka
+  muatData();
+</script>
+
+</body>
+</html>
